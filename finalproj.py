@@ -93,24 +93,25 @@ def get_cached_netstate(baseurl):
         # print(input('Enter a state abbreviation(type help if needed):'))
         ##HOW DO I GET IT TO KEEP RUNNING THRU
 #    else:
-        def get_netstate_data(state_abbr):
-            init_user_inp = state_abbr
-            baseurl = 'http://www.netstate.com/states/alma/{}_alma.htm'.format(state_abbr)
-            #html = get_cached_netstate(baseurl).text
-            resp = requests.get(baseurl).text
-            soup = BeautifulSoup(resp, 'html.parser') #change resp to html when figured out cache
-            soup.prettify()
-            symbol_table =soup.find(id="symboltable")
-            div = symbol_table.find('table')
-            my_table= div.find('table')
-            #print(my_table)
-            tr = my_table.find_all('tr')[0]
-            #print(tr)
-            td = tr.find_all('td')[1:3]
-            print(td)
-            city_list = []
-            for item in td:
-                print(item.string)
+def get_netstate_data(baseurl, state_abbr):
+    #init_user_inp = state_abbr
+    #baseurl = 'http://www.netstate.com/states/alma/{}_alma.htm'.format(state_abbr)
+    #html = get_cached_netstate(baseurl).text
+    baseurl = 'http://www.netstate.com/states/alma/al_alma.htm'
+    resp = requests.get(baseurl).text
+    soup = BeautifulSoup(resp, 'html.parser') #change resp to html when figured out cache
+    soup.prettify()
+    symbol_table =soup.find(id="symboltable")
+    div = symbol_table.find('table')
+    my_table= div.find('table')
+    #print(my_table)
+    tr = my_table.find_all('tr')[0]
+    #print(tr)
+    td = tr.find_all('td')[1:3]
+    #print(td)
+    city_list = []
+    for item in td:
+        print(item.string)
             #command_resp = ((item.string)[0] + ', {}:' + (item.string)[1]).format(state_abbr)
 
 #while user_inp != 'exit':
@@ -119,7 +120,7 @@ def get_cached_netstate(baseurl):
 yelp_api = YelpAPI(secrets.API_KEY)
 
 #YELP CACHE FOOD
-search_results = yelp_api.search_query(category = 'Restaurant', location = 'Birmingham, AL') #.format(city) #add state
+search_results = yelp_api.search_query(term = 'Restaurant', location = 'Birmingham, AL') #.format(city) #add state
 with open('yelp_cache.json', 'w') as CACHE_DICT:
     json.dump(search_results, CACHE_DICT)
 
@@ -142,7 +143,7 @@ for x in range(0, 5):
     print('---------------------------------------------------------')
 
 #YELP CACHE HOTELS
-search_results_2 = yelp_api.search_query(category = 'Hotels', location = 'Birmingham, AL') #.format(city)
+search_results_2 = yelp_api.search_query(term = 'Hotels', location = 'Detroit, MI') #.format(city)
 with open('yelp_cache_2.json', 'w') as CACHE_DICT_2:
     json.dump(search_results_2, CACHE_DICT_2)
 
@@ -152,24 +153,21 @@ with open('yelp_cache_2.json') as json_data_2:
 list_of_hotels = []
 for x in range(0, 5):
 	list_of_hotels.append(cached_file_2["businesses"][x])
-    #rating = cached_file_2["businesses"][x]["rating"]
-    #price = cached_file_2["businesses"][x]["price"]
-    # review_num = cached_file_2["businesses"][x]["review_count"]
-    # name = cached_file_2["businesses"][x]["alias"]
-    # loc = cached_file_2["businesses"][x]["location"]["display_address"]
-    # print(name.replace('-', ' ') + ' ' + str(loc))
-    # print('Rating: ' + str(rating))
-    # print('Number of reviews: ' + str(review_num))
-    # print('Price range: ' + str(price))
-    # print('---------------------------------------------------------')
-
- #PRINTING SAME AS ABOVE ???? NEED HOTELS 
+    rating = cached_file_2["businesses"][x]["rating"]
+    price = cached_file_2["businesses"][x]["price"]
+    review_num = cached_file_2["businesses"][x]["review_count"]
+    name = cached_file_2["businesses"][x]["alias"]
+    loc = cached_file_2["businesses"][x]["location"]["display_address"]
+    print(name.replace('-', ' ') + ' ' + str(loc))
+    print('Rating: ' + str(rating))
+    print('Number of reviews: ' + str(review_num))
+    print('Price range: ' + str(price))
+    print('---------------------------------------------------------')
 
 class Yelp:
     def __init__(self, city= "No city", state= "No state"):
         self.city = city
         self.state = state
-
 
 
 DBNAME = 'cities.db'
