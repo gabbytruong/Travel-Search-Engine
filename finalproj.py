@@ -34,70 +34,71 @@ def get_cached_netstate(baseurl):
 
 #GET DATA
 #Scrape data from netstate site and get top city in each state / population
-#init_user_inp = input('Enter a state abbreviation(type help if needed): ')
+init_user_inp = input('Enter a state abbreviation(type help if needed): ')
 
-#while init_user_inp != 'exit':
-#    if init_user_inp == 'help':
-        # print('Please enter one of the following state abbreviations:')
-        # print('ak for Alaska')
-        # print('al for Alabama')
-        # print('ar for Arkansas')
-        # print('az for Arizona')
-        # print('ca for California')
-        # print('co for Colorado')
-        # print('ct for Connecticut')
-        # print('dc for District of Columbia')
-        # print('de for Delaware')
-        # print('fl for Florida')
-        # print('ga for Georgia')
-        # print('hi for Hawaii')
-        # print('ia for Iowa')
-        # print('id for Idaho')
-        # print('il for Illinois')
-        # print('in for Indiana')
-        # print('ks for Kansas')
-        # print('ky for Kentucky')
-        # print('la for Louisiana')
-        # print('ma for Massachusetts')
-        # print('md for Maryland')
-        # print('me for Maine')
-        # print('mi for Michigan')
-        # print('mn for Minnesota')
-        # print('mo for Missouri')
-        # print('ms for Mississippi')
-        # print('mt for Montana')
-        # print('nc for North Carolina')
-        # print('nd for North Dakota')
-        # print('ne for Nebraska')
-        # print('nh for New Hampshire')
-        # print('nj for New Jersey')
-        # print('nm for New Mexico')
-        # print('nv for Nevada')
-        # print('ny for New York')
-        # print('oh for Ohio')
-        # print('ok for Oklahoma')
-        # print('or for Oregon')
-        # print('pa for Pennsylvania')
-        # print('ri for Rhode Island')
-        # print('sc for South Carolina')
-        # print('sd for South Dakota')
-        # print('tn for Tennessee')
-        # print('tx for Texas')
-        # print('ut for Utah')
-        # print('va for Virginia')
-        # print('vt for Vermont')
-        # print('wa for Washington')
-        # print('wi for Wisconsin')
-        # print('wv for West Virginia')
-        # print('wy for Wyoming')
-        # print(input('Enter a state abbreviation(type help if needed):'))
-        ##HOW DO I GET IT TO KEEP RUNNING THRU
-#    else:
+
+if init_user_inp == 'help':
+    print('Please enter one of the following state abbreviations:')
+    print('ak for Alaska')
+    print('al for Alabama')
+    print('ar for Arkansas')
+    print('az for Arizona')
+    print('ca for California')
+    print('co for Colorado')
+    print('ct for Connecticut')
+    print('dc for District of Columbia')
+    print('de for Delaware')
+    print('fl for Florida')
+    print('ga for Georgia')
+    print('hi for Hawaii')
+    print('ia for Iowa')
+    print('id for Idaho')
+    print('il for Illinois')
+    print('in for Indiana')
+    print('ks for Kansas')
+    print('ky for Kentucky')
+    print('la for Louisiana')
+    print('ma for Massachusetts')
+    print('md for Maryland')
+    print('me for Maine')
+    print('mi for Michigan')
+    print('mn for Minnesota')
+    print('mo for Missouri')
+    print('ms for Mississippi')
+    print('mt for Montana')
+    print('nc for North Carolina')
+    print('nd for North Dakota')
+    print('ne for Nebraska')
+    print('nh for New Hampshire')
+    print('nj for New Jersey')
+    print('nm for New Mexico')
+    print('nv for Nevada')
+    print('ny for New York')
+    print('oh for Ohio')
+    print('ok for Oklahoma')
+    print('or for Oregon')
+    print('pa for Pennsylvania')
+    print('ri for Rhode Island')
+    print('sc for South Carolina')
+    print('sd for South Dakota')
+    print('tn for Tennessee')
+    print('tx for Texas')
+    print('ut for Utah')
+    print('va for Virginia')
+    print('vt for Vermont')
+    print('wa for Washington')
+    print('wi for Wisconsin')
+    print('wv for West Virginia')
+    print('wy for Wyoming')
+    init_user_inp = input('Enter a state abbreviation: ')
+else:
+    exit()
+
 def get_netstate_data(baseurl, state_abbr):
-    #init_user_inp = state_abbr
+    init_user_inp = state_abbr
     #baseurl = 'http://www.netstate.com/states/alma/{}_alma.htm'.format(state_abbr)
     #html = get_cached_netstate(baseurl).text
-    baseurl = 'http://www.netstate.com/states/alma/al_alma.htm'
+    baseurl = 'http://www.netstate.com/states/alma/{}_alma.htm'.format(state_abbr)
     resp = requests.get(baseurl).text
     soup = BeautifulSoup(resp, 'html.parser') #change resp to html when figured out cache
     soup.prettify()
@@ -136,11 +137,11 @@ for x in range(0, 5):
     review_num = cached_file["businesses"][x]["review_count"]
     name = cached_file["businesses"][x]["alias"]
     loc = cached_file["businesses"][x]["location"]["display_address"]
+    print('----------------------restaurant--------------------------')
     print(name.replace('-', ' ') + ' ' + str(loc))
     print('Rating: ' + str(rating))
     print('Number of reviews: ' + str(review_num))
     print('Price range: ' + str(price))
-    print('---------------------------------------------------------')
 
 #YELP CACHE HOTELS
 search_results_2 = yelp_api.search_query(term = 'Hotels', location = 'Detroit, MI') #.format(city)
@@ -152,17 +153,18 @@ with open('yelp_cache_2.json') as json_data_2:
 
 list_of_hotels = []
 for x in range(0, 5):
-	list_of_hotels.append(cached_file_2["businesses"][x])
+    list_of_hotels.append(cached_file_2["businesses"][x])
     rating = cached_file_2["businesses"][x]["rating"]
     price = cached_file_2["businesses"][x]["price"]
     review_num = cached_file_2["businesses"][x]["review_count"]
     name = cached_file_2["businesses"][x]["alias"]
     loc = cached_file_2["businesses"][x]["location"]["display_address"]
+    print('-----------------------hotel---------------------------')
     print(name.replace('-', ' ') + ' ' + str(loc))
     print('Rating: ' + str(rating))
     print('Number of reviews: ' + str(review_num))
     print('Price range: ' + str(price))
-    print('---------------------------------------------------------')
+#make each variable version 2
 
 class Yelp:
     def __init__(self, city= "No city", state= "No state"):
@@ -256,7 +258,6 @@ state_dict = {
         'mi': 'Michigan',
         'mn': 'Minnesota',
         'mo': 'Missouri',
-        'mp': 'Northern Mariana Islands',
         'ms': 'Mississippi',
         'mt': 'Montana',
         'na': 'National',
@@ -272,7 +273,6 @@ state_dict = {
         'ok': 'Oklahoma',
         'or': 'Oregon',
         'pa': 'Pennsylvania',
-        'pr': 'Puerto Rico',
         'ri': 'Rhode Island',
         'sc': 'South Carolina',
         'sd': 'South Dakota',
@@ -280,13 +280,13 @@ state_dict = {
         'tx': 'Texas',
         'ut': 'Utah',
         'va': 'Virginia',
-        'vi': 'Virgin Islands',
         'vt': 'Vermont',
         'wa': 'Washington',
         'wi': 'Wisconsin',
         'wv': 'West Virginia',
         'wy': 'Wyoming'
 }
-
+#call function at the bottom
+function(url, init_user_inp)
 
 #plotly with price??
