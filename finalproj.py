@@ -34,10 +34,10 @@ def get_cached_netstate(baseurl):
 
 #GET DATA
 #Scrape data from netstate site and get top city in each state / population
-init_user_inp = input('Enter a state abbreviation(type help if needed): ')
+#init_user_inp = input('Enter a state abbreviation(type help if needed): ')
 
-while init_user_inp != 'exit':
-    if init_user_inp == 'help':
+#while init_user_inp != 'exit':
+#    if init_user_inp == 'help':
         # print('Please enter one of the following state abbreviations:')
         # print('ak for Alaska')
         # print('al for Alabama')
@@ -92,7 +92,7 @@ while init_user_inp != 'exit':
         # print('wy for Wyoming')
         # print(input('Enter a state abbreviation(type help if needed):'))
         ##HOW DO I GET IT TO KEEP RUNNING THRU
-    else:
+#    else:
         def get_netstate_data(state_abbr):
             init_user_inp = state_abbr
             baseurl = 'http://www.netstate.com/states/alma/{}_alma.htm'.format(state_abbr)
@@ -134,11 +134,11 @@ for x in range(0, 5):
     price = cached_file["businesses"][x]["price"]
     review_num = cached_file["businesses"][x]["review_count"]
     name = cached_file["businesses"][x]["alias"]
-    loc = cached_file["businesses"][x]["location"]["display_address"])
-    print(name + ',' + loc)
-    print('rating:' + rating)
-    print('review #:' + review num)
-    print('price range of:' + price)
+    loc = cached_file["businesses"][x]["location"]["display_address"]
+    print(name.replace('-', ' ') + ' ' + str(loc))
+    print('Rating: ' + str(rating))
+    print('Number of reviews: ' + str(review_num))
+    print('Price range: ' + str(price))
     print('---------------------------------------------------------')
 
 #YELP CACHE HOTELS
@@ -152,17 +152,18 @@ with open('yelp_cache_2.json') as json_data_2:
 list_of_hotels = []
 for x in range(0, 5):
 	list_of_hotels.append(cached_file_2["businesses"][x])
-    rating = cached_file_2["businesses"][x]["rating"]
-    price = cached_file_2["businesses"][x]["price"]
-    review_num = cached_file_2["businesses"][x]["review_count"]
-    name = cached_file_2["businesses"][x]["alias"]
-    loc = cached_file_2["businesses"][x]["location"]["display_address"])
-    print(name + ',' + loc)
-    print('rating:' + rating)
-    print('review #:' + review num)
-    print('price range of:' + price)
+    #rating = cached_file_2["businesses"][x]["rating"]
+    #price = cached_file_2["businesses"][x]["price"]
+    # review_num = cached_file_2["businesses"][x]["review_count"]
+    # name = cached_file_2["businesses"][x]["alias"]
+    # loc = cached_file_2["businesses"][x]["location"]["display_address"]
+    # print(name.replace('-', ' ') + ' ' + str(loc))
+    # print('Rating: ' + str(rating))
+    # print('Number of reviews: ' + str(review_num))
+    # print('Price range: ' + str(price))
     # print('---------------------------------------------------------')
- #PRINTING SAME AS ABOVE
+
+ #PRINTING SAME AS ABOVE ???? NEED HOTELS 
 
 class Yelp:
     def __init__(self, city= "No city", state= "No state"):
