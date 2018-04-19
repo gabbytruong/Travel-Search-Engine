@@ -13,10 +13,10 @@ yelp_api = YelpAPI(secrets.API_KEY)
 
 
 #CACHE FOR NETSTATE
-CACHE_FNAME_3 = 'netstate_cache.json'
+NETSTATE_CACHE = 'netstate_cache.json'
 
 try:
-    cache_file_3 = open(CACHE_FNAME_3, 'r')
+    cache_file_3 = open(NETSTATE_CACHE, 'r')
     cache_contents_3 = cache_file_3.read()
     CACHE_DICT_3 = json.loads(cache_contents_3)
     cache_file_3.close()
@@ -30,7 +30,7 @@ def get_cached_netstate(baseurl):
     else:
         resp = requests.get(baseurl)
         CACHE_DICT_3[unique_ident] = resp.text
-        f = open(CACHE_FNAME_3, 'w')
+        f = open(NETSTATE_CACHE, 'w')
         dumped_json = json.dumps(CACHE_DICT_3)
         f.write(dumped_json)
         f.close()
@@ -48,84 +48,94 @@ class NetState:
         #self.get_netstate_data(baseurl) #do i have to do url = none?
 
     def __str__(self):
-        return '{}, {}: population of {}'.format(city, state_abbr.upper(), population)
+        return '{}, {}: {}'.format(city, state_abbr.upper(), population)
 
 #parses net state website (each page) and retrieves top city and pop
+
+
+init_user_inp = input('Enter a state abbreviation (or "help" for a list of states): ')
+
 def get_netstate_data(state_abbr): #do i take other params
     init_user_inp = state_abbr
     baseurl = 'http://www.netstate.com/states/alma/{}_alma.htm'.format(state_abbr)
     html = get_cached_netstate(baseurl)
     soup = BeautifulSoup(html, 'html.parser')
     symbol_table =soup.find(id='symboltable')
-    tbody = symbol_table.find('tbody')
-    my_table = div.find('table')
-    tr = my_table.find_all('tr')[0]
-    td_list = tr.find_all('td')
-    city_list = []
+    my_table = symbol_table.find('table')
+    inner_table = my_table.find('table')
+    tr = inner_table.find_all('tr')[0]
+    td = tr.find_all('td')
+    city_td = td[1].string
+    pop_td = td[2].string
+    print(city_td)
+    print(pop_td)
 
-    for td in td_list:
-        city_td = td[1]
-        population_td = td[2]
-        city = city_td.string
-        population = population_td.string
-
-        netstate_info = NetState(city=city, state_abbr=state_abbr,
-        population=population, baseurl=baseurl)
-        city_list.append(netstate_info)
-        print(city_list)
-    return city_list
-#check how this works -- need a list or not??
-
-
-
+    # city_list = []
+    #
+    # for td_item in td:
+    #     city_td = td_item[1]
+    #     population_td = td_item[2]
+    #     city = city_td.string
+    #     population = population_td.string
+    # return city, population
+    # print (city, population)
+#         netstate_info = NetState(city=city, state_abbr=state_abbr,
+#         population=population, baseurl=baseurl)
+#         city_list.append(netstate_info)
+#         print(city_list)
+#     return city_list #check how this works -- need a list or not??
+#
+# get_netstate_data(init_user_inp)
 
 
 #YELP CACHE FOOD - get top 5 for inputted city
-search_results = yelp_api.search_query(term = 'Restaurant', location = '{}, {}').format(city, state_abbr.upper())
-with open('yelp_cache.json', 'w') as CACHE_DICT:
-    json.dump(search_results, CACHE_DICT)
+# search_results = yelp_api.search_query(term = 'Restaurant', location = 'Detroit, MI') #'{}, {}').format(city, state_abbr.upper())
+# with open('yelp_cache.json', 'w') as CACHE_DICT: #^how can i get user input to format into this
+#     json.dump(search_results, CACHE_DICT)
+#
+# # read the cached file and save it as a json object i can work with
+# with open('yelp_cache.json') as json_data:
+#     cached_file = json.load(json_data)
 
-# read the cached file and save it as a json object i can work with
-with open('yelp_cache.json') as json_data:
-    cached_file = json.load(json_data)
-
-list_of_restaurants = []
-for x in range(0, 5):
-    list_of_restaurants.append(cached_file["businesses"][x])
-    r_rating = cached_file["businesses"][x]["rating"]
-    r_price = cached_file["businesses"][x]["price"]
-    r_review_num = cached_file["businesses"][x]["review_count"]
-    r_name = cached_file["businesses"][x]["alias"]
-    r_loc = cached_file["businesses"][x]["location"]["display_address"]
-    print('----------------------restaurant--------------------------')
-    print(r_name.replace('-', ' ') + ' ' + str(r_loc))
-    print('Rating: ' + str(rating))
-    print('Number of reviews: ' + str(review_num))
-    print('Price range: ' + str(price))
-
-
-#YELP CACHE HOTELS - get top 5 for inputted city
-search_results_2 = yelp_api.search_query(term = 'Hotels', location = '{}, {}').format(city, state_abbr.upper())
-with open('yelp_cache_2.json', 'w') as CACHE_DICT_2:
-    json.dump(search_results_2, CACHE_DICT_2)
-
-with open('yelp_cache_2.json') as json_data_2:
-    cached_file_2 = json.load(json_data_2)
-
-list_of_hotels = []
-for x in range(0, 5):
-    list_of_hotels.append(cached_file_2["businesses"][x])
-    h_rating = cached_file_2["businesses"][x]["rating"]
-    h_price = cached_file_2["businesses"][x]["price"]
-    h_review_num = cached_file_2["businesses"][x]["review_count"]
-    h_name = cached_file_2["businesses"][x]["alias"]
-    h_loc = cached_file_2["businesses"][x]["location"]["display_address"]
-    print('-----------------------hotel---------------------------')
-    print(h_name.replace('-', ' ') + ' ' + str(h_loc))
-    print('Rating: ' + str(h_rating))
-    print('Number of reviews: ' + str(h_review_num))
-    print('Price range: ' + str(h_price))
-
+# def get_restaurants(): #should this and next take a param based on user or no
+#     list_of_restaurants = []
+#     for x in range(0, 5):
+#         list_of_restaurants.append(cached_file["businesses"][x])
+#         r_rating = cached_file["businesses"][x]["rating"]
+#         r_price = cached_file["businesses"][x]["price"]
+#         r_review_num = cached_file["businesses"][x]["review_count"]
+#         r_name = cached_file["businesses"][x]["alias"]
+#         r_loc = cached_file["businesses"][x]["location"]["display_address"]
+#         print('----------------------Restaurant--------------------------')
+#         print(r_name.replace('-', ' ') + ' ' + str(r_loc)) #loc to print w out brackets
+#         print('Rating: ' + str(r_rating))
+#         print('Number of reviews: ' + str(r_review_num))
+#         print('Price range: ' + str(r_price))
+# get_restaurants()
+#
+# #YELP CACHE HOTELS - get top 5 for inputted city
+# search_results_2 = yelp_api.search_query(term = 'Hotels', location = 'Los Angeles, CA')#'{}, {}').format(city, state_abbr.upper())
+# with open('yelp_cache_2.json', 'w') as CACHE_DICT_2:
+#     json.dump(search_results_2, CACHE_DICT_2)
+#
+# with open('yelp_cache_2.json') as json_data_2:
+#     cached_file_2 = json.load(json_data_2)
+#
+# def get_hotels():
+#     list_of_hotels = []
+#     for x in range(0, 5):
+#         list_of_hotels.append(cached_file_2["businesses"][x])
+#         h_rating = cached_file_2["businesses"][x]["rating"]
+#         h_price = cached_file_2["businesses"][x]["price"] #gets key error depending on city
+#         h_review_num = cached_file_2["businesses"][x]["review_count"]
+#         h_name = cached_file_2["businesses"][x]["alias"]
+#         h_loc = cached_file_2["businesses"][x]["location"]["display_address"]
+#         print('-----------------------Hotel---------------------------')
+#         print(h_name.replace('-', ' ') + ' ' + str(h_loc)) #get loc to print w/out brackets
+#         print('Rating: ' + str(h_rating))
+#         print('Number of reviews: ' + str(h_review_num))
+#         print('Price range: ' + str(h_price))
+# get_hotels()
 
 #create database with two tables:
 #table 'Cities' - city (w/ID), state, population (50 of them)
@@ -181,16 +191,21 @@ def init_db():
 #     conn = sqlite3.connect(DBNAME)
 #     cur = conn.cursor()
 #
-#     conn.commit()
+#     f = open(NETSTATE_CACHE, 'r')
+#     contents = f.read()
+#     city_data = json.loads(contents)
+#     cities_dict = {}
+#     counter = 1
+#     for c in city_data:
+#         if
 
-#make list of all cities - give each one an ID and make a database w it and pop #
+
+    conn.commit()
 
 
 
 
-#interactive prompt
-
-init_user_inp = input('Enter a state abbreviation (or "help" for a list of states): ')
+#INTERACTIVE PROMPT
 
 state_dict = {
         'ak': 'Alaska',
@@ -302,7 +317,7 @@ if init_user_inp == 'help':
      init_user_inp = input('Enter a state abbreviation: ') #explain to GSI only need it once
 elif init_user_inp in state_dict.keys():
     state_info = get_netstate_data(init_user_inp)
-    print(NetState(__str__))
+    str(NetState) #needs to print out the str format from netstate class
 else:
      exit()
 
