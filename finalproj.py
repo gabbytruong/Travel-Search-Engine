@@ -48,31 +48,40 @@ class NetState:
         #self.get_netstate_data(baseurl) #do i have to do url = none?
 
     def __str__(self):
-        '{}, {}: population of {}'.format(city, state_abbr.upper(), population)
+        return '{}, {}: population of {}'.format(city, state_abbr.upper(), population)
 
+#parses net state website (each page) and retrieves top city and pop
 def get_netstate_data(state_abbr): #do i take other params
     init_user_inp = state_abbr
     baseurl = 'http://www.netstate.com/states/alma/{}_alma.htm'.format(state_abbr)
     html = get_cached_netstate(baseurl)
     soup = BeautifulSoup(html, 'html.parser')
     symbol_table =soup.find(id='symboltable')
-    div = symbol_table.find('table')
-    my_table= div.find('table')
+    tbody = symbol_table.find('tbody')
+    my_table = div.find('table')
     tr = my_table.find_all('tr')[0]
-    td = tr.find_all('td')[1:3]
+    td_list = tr.find_all('td')
     city_list = []
 
-    for item in td:
-        print(item.string) #was printing city, population under it
-                #command_resp = ((item.string)[0] + ', {}:' + (item.string)[1]).format(state_abbr)
+    for td in td_list:
+        city_td = td[1]
+        population_td = td[2]
+        city = city_td.string
+        population = population_td.string
 
-get_netstate_data(baseurl, init_user_inp)
+        netstate_info = NetState(city=city, state_abbr=state_abbr,
+        population=population, baseurl=baseurl)
+        city_list.append(netstate_info)
+        print(city_list)
+    return city_list
+#check how this works -- need a list or not??
 
 
 
 
-#YELP CACHE FOOD
-search_results = yelp_api.search_query(term = 'Restaurant', location = 'Birmingham, AL') #.format(city) #add state
+
+#YELP CACHE FOOD - get top 5 for inputted city
+search_results = yelp_api.search_query(term = 'Restaurant', location = '{}, {}').format(city, state_abbr.upper())
 with open('yelp_cache.json', 'w') as CACHE_DICT:
     json.dump(search_results, CACHE_DICT)
 
@@ -94,8 +103,9 @@ for x in range(0, 5):
     print('Number of reviews: ' + str(review_num))
     print('Price range: ' + str(price))
 
-#YELP CACHE HOTELS
-search_results_2 = yelp_api.search_query(term = 'Hotels', location = 'Detroit, MI') #.format(city)
+
+#YELP CACHE HOTELS - get top 5 for inputted city
+search_results_2 = yelp_api.search_query(term = 'Hotels', location = '{}, {}').format(city, state_abbr.upper())
 with open('yelp_cache_2.json', 'w') as CACHE_DICT_2:
     json.dump(search_results_2, CACHE_DICT_2)
 
@@ -117,9 +127,12 @@ for x in range(0, 5):
     print('Price range: ' + str(h_price))
 
 
+#create database with two tables:
+#table 'Cities' - city (w/ID), state, population (50 of them)
+#table 'YelpResults' - city (w/ID), restaurant[0], hotel[0], price, rating, review #
 
 DBNAME = 'cities.db'
-#load into db
+
 def init_db():
     conn = sqlite3.connect(DBNAME)
     cur = conn.cursor()
@@ -173,12 +186,12 @@ def init_db():
 #make list of all cities - give each one an ID and make a database w it and pop #
 
 
-#make thing for yelp to select top 5 restaurants and top 5 hotel/travel
 
 
 #interactive prompt
 
-init_user_inp = input('Enter a state abbreviation(type help for a list of states): ')
+init_user_inp = input('Enter a state abbreviation (or "help" for a list of states): ')
+
 state_dict = {
         'ak': 'Alaska',
         'al': 'Alabama',
@@ -287,16 +300,18 @@ if init_user_inp == 'help':
      print('wv for West Virginia')
      print('wy for Wyoming')
      init_user_inp = input('Enter a state abbreviation: ') #explain to GSI only need it once
-
 elif init_user_inp in state_dict.keys():
-
-
- else:
+    state_info = get_netstate_data(init_user_inp)
+    print(NetState(__str__))
+else:
      exit()
+
+#plotly with price??
+
+#virtualenv
+
 
 #call function at the bottom
 
 if __name__ == '__main__':
     unittest.main()
-
-#plotly with price??
