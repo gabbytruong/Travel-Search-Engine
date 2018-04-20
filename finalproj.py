@@ -38,11 +38,10 @@ def get_cached_netstate(baseurl):
         f.close()
         return CACHE_DICT_3[unique_ident]
 
-
-#initial prompt
+#INITIAL PROMPT FOR USER INPUT
 user_inp = input('Enter a state abbreviation (or "help" for a list of states): ')
 
-#adds help option if needed
+#ADDING A HELP OPTION
 if user_inp == 'help':
      print('Please enter one of the following state abbreviations:')
      print('ak for Alaska')
@@ -97,7 +96,7 @@ if user_inp == 'help':
      print('wy for Wyoming')
      user_inp = input('Enter a state abbreviation: ')
 
-#create class
+#CREATE NETSTATE CLASS
 class NetState:
     def __init__(self, state_abbr='No state', city='No city',
     population ='No population', baseurl=None):
@@ -152,9 +151,9 @@ def get_netstate_data(user_inp):
     loc = NetState(city = city, population = population, state_abbr = user_inp)
 
     print(city + ', ' + user_inp.upper() + ': population of ' + population)
-    return (city, user_inp)
+    return (city, user_inp, population)
 
-get_netstate_data(user_inp) #prints result string
+get_netstate_data(user_inp) #PRINT RESULT STRING
 
 
 #YELP CACHE - FOOD
@@ -213,7 +212,7 @@ def get_hotels(user_inp):
         print('Price range: ' + str(price))
         print('')
 
-#second prompt
+#SECOND USER PROMPT
 user_inp_2 = input('To view restaurant and hotel reccomendations, enter "yes". To exit, enter "exit": ')
 if user_inp_2 == 'yes':
     get_restaurants(user_inp)
@@ -221,9 +220,8 @@ if user_inp_2 == 'yes':
 else:
     exit()
 
-#
-
-def pop_db():
+#FORMULATE ALL NETSTATE DATA INTO CACHE
+def state_info():
     state_dict = {
             'ak': 'Alaska',
             'al': 'Alabama',
@@ -279,24 +277,24 @@ def pop_db():
 
     city_data_lst = []
     for state in state_dict.keys():
-        state_info = get_netstate_data(user_inp =state)
+        state_info = get_netstate_data(state)
         city_data_lst.append(state_info)
     return city_data_lst
-    print(city_data_lst)
-pop_db()
 
-#create database with two tables:
-#table 'Cities' - city (w/ID), state, population (50 of them)
+#(state_info())
+
+#CREATE DB WITH FOLLOWING TABLES:
+#table 'NetState' - city (w/ID), state, population (50 of them)
 #table 'YelpResults' - city (w/ID), restaurant[0], hotel[0], price, rating, review #
 
 DBNAME = 'cities.db'
 
 def init_db():
-    conn = sqlite3.connect(DBNAME)
+    conn = sqlite.connect(DBNAME)
     cur = conn.cursor()
 
     statement = '''
-        DROP TABLE IF EXISTS 'Cities';
+        DROP TABLE IF EXISTS 'NetState';
     '''
     cur.execute(statement)
     conn.commit()
@@ -308,11 +306,11 @@ def init_db():
     conn.commit()
 
     statement = '''
-        CREATE TABLE 'Cities' (
+        CREATE TABLE 'NetState' (
             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
             'City' TEXT NOT NULL,
-            'State' TEXT NOT NULL,
-            'Population' INTEGER
+            'StateAbbr' TEXT NOT NULL,
+            'Population' INTEGER NOT NULL
 
         );
     '''
@@ -323,11 +321,11 @@ def init_db():
         CREATE TABLE 'YelpResults' (
             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
             'City' TEXT NOT NULL,
-            'State' TEXT NOT NULL,
-            'Search Category' TEXT NOT NULL,
-            'Rating' INTEGER NOT NULL,
-            'Price' INTEGER NOT NULL,
-            'Reviews' INTEGER NOT NULL
+            'StateAbbr' TEXT NOT NULL,
+            'Category' TEXT NOT NULL,
+            'Rating' INTEGER,
+            'Price' INTEGER,
+            'Reviews' INTEGER
         );
     '''
 
@@ -335,24 +333,31 @@ def init_db():
     conn.commit()
     conn.close()
 
+def populate_ns():
+    conn = sqlite.connect(DBNAME)
+    cur = conn.cursor()
 
-# def populate_cities():
-#     conn = sqlite3.connect(DBNAME)
-#     cur = conn.cursor()
-#
-#     f = open(NETSTATE_CACHE, 'r')
-#     contents = f.read()
-#     city_data = json.loads(contents)
-#     cities_dict = {}
-#     counter = 1
-#     for c in city_data:
-#         if
-#
-#
-#     conn.commit()
+    f = open(NETSTATE_CACHE, 'r')
+    contents = f.read()
+    city_data = json.loads(contents)
+    city_info = state_info()
+    for item in city_info:
+        city = item[0]
+        population = item[2]
+        stateabbr = item[2].upper()
+
+        insertion = (None, city, stateabbr, population)
+        statement = 'INSERT INTO "NetState" '
+        statement += 'VALUES (?, ?, ?, ?)'
+        cur.execute(statement, insertion)
+
+    conn.commit()
+    conn.close()
+
+init_db()
+populate_ns()
 
 
- #explain to GSI only need it once
 
 
 #plotly
@@ -362,8 +367,8 @@ def init_db():
 
 #call function at the bottom
 
-if __name__ == "__main__":
-		unittest.main(verbosity=2)
+#if __name__ == "__main__":
+#		unittest.main(verbosity=2)
 
 # if __name__ == '__main__':
 #     unittest.main()
