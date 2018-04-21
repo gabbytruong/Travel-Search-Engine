@@ -203,21 +203,21 @@ def get_hotels(user_inp):
     return (name.replace('-', ' '), str(address), str(rating), str(review_num), str(price))
 
 #SECOND USER PROMPT
-# user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
-#
-# if user_inp_2 == 'view':
-#     get_restaurants(user_inp)
-#     print(' ')
-#     get_hotels(user_inp)
-#
-#
-# elif user_inp_2 == 'exit':
-#     print ('\nThanks, and happy travels!')
-#     exit()
-#
-# else:
-#     print('Please enter a valid command.')
-#     user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
+user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
+
+if user_inp_2 == 'view':
+    get_restaurants(user_inp)
+    print(' ')
+    get_hotels(user_inp)
+
+
+elif user_inp_2 == 'exit':
+    print ('\nThanks, and happy travels!')
+    exit()
+
+else:
+    print('Please enter a valid command.')
+    user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
 
 
 state_dict = {
@@ -327,23 +327,6 @@ def get_restaurant_data():
         restaurant_lst.append(restaurant_info)
     #print(restaurant_lst)
     return restaurant_lst
-
-#FORMULATE ALL NETSTATE DATA INTO CACHE
-user_inp_3 = input('To further view general city population information, enter "view".\nOtherwise, enter "exit" to exit the program: ')
-
-# print ('\nThanks, and happy travels!')
-# exit()
-
-if user_inp_3 == 'exit':
-    print ('\nThanks, and happy travels!')
-    exit()
-elif user_inp_3 == 'view':
-    get_city_data()
-    print ('\nThanks, and happy travels!')
-
-else:
-    print('Please enter a valid command.')
-    user_inp_3 = input('To further view general city population information, enter "view".\nOtherwise, enter "exit" to exit the program: ')
 
 
 #CREATE DB WITH FOLLOWING TABLES:
@@ -508,9 +491,9 @@ def create_plot_4():
     fig = dict(data=data, layout=layout)
     plot_url = py.plot(fig, filename='Plot4')
 
-user_inp_4 = input('To further view graph comparisons of cities along with their top restaurants, enter "view".\nOtherwise, enter "exit": ')
+user_inp_3 = input('To further view graph comparisons of cities along with their top restaurants, enter "view".\nOtherwise, enter "exit": ')
 
-if user_inp_4 == 'view':
+if user_inp_3 == 'view':
     create_plot_1()
     create_plot_2()
     create_plot_3()
