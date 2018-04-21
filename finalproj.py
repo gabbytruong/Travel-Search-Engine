@@ -10,6 +10,7 @@ import sqlite3 as sqlite
 #import plotly.plotly as py
 #import plotly.graph_objs as go
 
+#upload  to plotly ( screenshots)
 
 yelp_api = YelpAPI(secrets.API_KEY)
 
@@ -99,42 +100,24 @@ if user_inp == 'help':
 #CREATE NETSTATE CLASS
 class NetState:
     def __init__(self, state_abbr='No state', city='No city',
-    population ='No population', baseurl=None):
+    population ='No population', rating = 'No rating',
+    price = 'No price range', review_num = 'No review number' ,
+    name= 'No business name' , address = 'No address'):
 
-        self.state_abbr = state_abbr
-        self.baseurl = baseurl
+        self.state_abbr = user_inp
+        self.rating = rating
+        self.price = price
+        self.review_num = review_num
+        self.name = name
+        self.address = address
+        self.city = city
+        self.population = population
 
-        if baseurl is None:
-            self.city = city
-            self.population = population
-
-        else:
-            self.ns_info(baseurl)
 
     def __str__(self):
         return '{}, {}: {}'.format(city, state_abbr, population)
 
-    def ns_info(self, baseurl):
-        baseurl = 'http://www.netstate.com/states/alma/{}_alma.htm'.format(self.state_abbr)
-        html = get_cached_netstate(baseurl)
-        soup = BeautifulSoup(html, 'html.parser')
-
-        symbol_table =soup.find(id='symboltable')
-        my_table = symbol_table.find('table')
-        inner_table = my_table.find('table')
-        tr = inner_table.find_all('tr')[0]
-        td = tr.find_all('td')
-        try:
-            self.city = td[1].string
-        except:
-            self.city = 'No city'
-        try:
-            self.population = td[2].string
-        except:
-            self.population = 'No city'
-
-print(' ')
-
+    print(' ')
 
 #GET NETSTATE DATA
 def get_netstate_data(user_inp):
@@ -148,9 +131,9 @@ def get_netstate_data(user_inp):
     td = tr.find_all('td')
     city = td[1].string
     population = td[2].string
-    loc = NetState(city = city, population = population, state_abbr = user_inp)
+    class_item = NetState(city = city, population = population, state_abbr = user_inp)
 
-    print(city + ', ' + user_inp.upper() + ': population of ' + population)
+    print(city + ', ' + user_inp.upper() + ': population of ' + population + '\n ')
     return (city, user_inp, population)
 
 get_netstate_data(user_inp) #PRINT RESULT STRING
@@ -168,21 +151,24 @@ def get_restaurants(user_inp):
         cached_file = json.load(json_data)
 
     for x in range(0, 5):
-        rating = cached_file["businesses"][x]["rating"]
+        try:
+            rating = cached_file["businesses"][x]["rating"]
+        except:
+            rating = "No rating available."
         try:
             price = cached_file["businesses"][x]["price"]
         except:
             price = "No price range available."
         review_num = cached_file["businesses"][x]["review_count"]
         name = cached_file["businesses"][x]["alias"]
-        loc = cached_file["businesses"][x]["location"]["display_address"]
+        address = cached_file["businesses"][x]["location"]["display_address"]
         print('------------------- Restaurant -------------------')
-        print(name.replace('-', ' ').upper() + ' ' + str(loc))
+        print(name.replace('-', ' ').upper() + ' ' + str(address))
         print('Rating: ' + str(rating))
         print('Number of reviews: ' + str(review_num))
         print('Price range: ' + str(price))
         print('')
-
+    return (name.replace('-', ' '), str(address), str(rating), str(review_num), str(price))
 
 #YELP CACHE - HOTELS
 def get_hotels(user_inp):
@@ -199,104 +185,117 @@ def get_hotels(user_inp):
     for x in range(0, 5):
         rating = cached_file_2["businesses"][x]["rating"]
         try:
-            price = cached_file["businesses"][x]["price"]
+            price = cached_file_2["businesses"][x]["price"]
         except:
             price = "No price range available."
         review_num = cached_file_2["businesses"][x]["review_count"]
         name = cached_file_2["businesses"][x]["alias"]
-        loc = cached_file_2["businesses"][x]["location"]["display_address"]
+        address = cached_file_2["businesses"][x]["location"]["display_address"]
         print('--------------------- Hotel ----------------------')
-        print(name.replace('-', ' ').upper() + ' ' + str(loc)) #if i have time, replace the [ ]
+        print(name.replace('-', ' ').upper() + ' ' + str(address)) #if i have time, replace the [ ]
         print('Rating: ' + str(rating))
         print('Number of reviews: ' + str(review_num))
         print('Price range: ' + str(price))
         print('')
+    return (name.replace('-', ' '), str(address), str(rating), str(review_num), str(price))
 
 #SECOND USER PROMPT
 user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
 
 if user_inp_2 == 'view':
     get_restaurants(user_inp)
+    print(' ')
     get_hotels(user_inp)
+
 elif user_inp_2 == 'exit':
     print ('\nThanks, and happy travels!')
     exit()
+
 else:
     print('Please enter a valid command.')
     user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
 
 
+state_dict = {
+        'ak': 'Alaska',
+        'al': 'Alabama',
+        'ar': 'Arkansas',
+        'az': 'Arizona',
+        'ca': 'California',
+        'co': 'Colorado',
+        'ct': 'Connecticut',
+        'de': 'Delaware',
+        'fl': 'Florida',
+        'ga': 'Georgia',
+        'hi': 'Hawaii',
+        'ia': 'Iowa',
+        'id': 'Idaho',
+        'il': 'Illinois',
+        'in': 'Indiana',
+        'ks': 'Kansas',
+        'ky': 'Kentucky',
+        'la': 'Louisiana',
+        'ma': 'Massachusetts',
+        'md': 'Maryland',
+        'me': 'Maine',
+        'mi': 'Michigan',
+        'mn': 'Minnesota',
+        'mo': 'Missouri',
+        'ms': 'Mississippi',
+        'mt': 'Montana',
+        'nc': 'North Carolina',
+        'nd': 'North Dakota',
+        'ne': 'Nebraska',
+        'nh': 'New Hampshire',
+        'nj': 'New Jersey',
+        'nm': 'New Mexico',
+        'nv': 'Nevada',
+        'ny': 'New York',
+        'oh': 'Ohio',
+        'ok': 'Oklahoma',
+        'or': 'Oregon',
+        'pa': 'Pennsylvania',
+        'ri': 'Rhode Island',
+        'sc': 'South Carolina',
+        'sd': 'South Dakota',
+        'tn': 'Tennessee',
+        'tx': 'Texas',
+        'ut': 'Utah',
+        'va': 'Virginia',
+        'vt': 'Vermont',
+        'wa': 'Washington',
+        'wi': 'Wisconsin',
+        'wv': 'West Virginia',
+        'wy': 'Wyoming'
+}
+
+def get_city_data():
+    city_data_lst = []
+    for state in state_dict.keys():
+        state_info = get_netstate_data(state)
+        city_data_lst.append(state_info)
+    return city_data_lst
+
+
+def get_restaurant_data():
+    restaurant_lst = []
+    for state in state_dict.keys():
+        restaurant_info = get_restaurants(state)
+        restaurant_lst.append(restaurant_info)
+    #print(restaurant_lst)
+    return restaurant_info
 
 
 #FORMULATE ALL NETSTATE DATA INTO CACHE
 user_inp_3 = input('To further view general city population information, enter "view".\nOtherwise, enter "exit" to exit the program: ')
 
-if user_inp_3 == 'view':
-    def state_info():
-        state_dict = {
-                'ak': 'Alaska',
-                'al': 'Alabama',
-                'ar': 'Arkansas',
-                'az': 'Arizona',
-                'ca': 'California',
-                'co': 'Colorado',
-                'ct': 'Connecticut',
-                'de': 'Delaware',
-                'fl': 'Florida',
-                'ga': 'Georgia',
-                'hi': 'Hawaii',
-                'ia': 'Iowa',
-                'id': 'Idaho',
-                'il': 'Illinois',
-                'in': 'Indiana',
-                'ks': 'Kansas',
-                'ky': 'Kentucky',
-                'la': 'Louisiana',
-                'ma': 'Massachusetts',
-                'md': 'Maryland',
-                'me': 'Maine',
-                'mi': 'Michigan',
-                'mn': 'Minnesota',
-                'mo': 'Missouri',
-                'ms': 'Mississippi',
-                'mt': 'Montana',
-                'nc': 'North Carolina',
-                'nd': 'North Dakota',
-                'ne': 'Nebraska',
-                'nh': 'New Hampshire',
-                'nj': 'New Jersey',
-                'nm': 'New Mexico',
-                'nv': 'Nevada',
-                'ny': 'New York',
-                'oh': 'Ohio',
-                'ok': 'Oklahoma',
-                'or': 'Oregon',
-                'pa': 'Pennsylvania',
-                'ri': 'Rhode Island',
-                'sc': 'South Carolina',
-                'sd': 'South Dakota',
-                'tn': 'Tennessee',
-                'tx': 'Texas',
-                'ut': 'Utah',
-                'va': 'Virginia',
-                'vt': 'Vermont',
-                'wa': 'Washington',
-                'wi': 'Wisconsin',
-                'wv': 'West Virginia',
-                'wy': 'Wyoming'
-        }
-
-        city_data_lst = []
-        for state in state_dict.keys():
-            state_info = get_netstate_data(state)
-            city_data_lst.append(state_info)
-        print ('\nThanks, and happy travels!')
-        return city_data_lst
-
-elif user_inp_3 == 'exit':
+if user_inp_3 == 'exit':
     print ('\nThanks, and happy travels!')
     exit()
-
+elif user_inp_3 == 'view':
+    get_city_data()
+    print ('\nThanks, and happy travels!')
+    #get_restaurant_data()
 else:
     print('Please enter a valid command.')
     user_inp_3 = input('To further view general city population information, enter "view".\nOtherwise, enter "exit" to exit the program: ')
@@ -305,7 +304,7 @@ else:
 
 #CREATE DB WITH FOLLOWING TABLES:
 #table 'NetState' - city (w/ID), state, population (50 of them)
-#table 'YelpResults' - city (w/ID), restaurant[0], hotel[0], price, rating, review #
+#table 'YelpResults' - city (w/ID), category, price, rating, review #
 
 DBNAME = 'cities.db'
 
@@ -320,7 +319,7 @@ def init_db():
     conn.commit()
 
     statement = '''
-        DROP TABLE IF EXISTS 'YelpResults';
+        DROP TABLE IF EXISTS 'YelpRestaurantResults';
     '''
     cur.execute(statement)
     conn.commit()
@@ -338,16 +337,16 @@ def init_db():
     conn.commit()
 
     statement = '''
-        CREATE TABLE 'YelpResults' (
+        CREATE TABLE 'YelpRestaurantResults' (
             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
-            'City' TEXT NOT NULL,
-            'StateAbbr' TEXT NOT NULL
+            'RestaurantName' TEXT NOT NULL,
+            'Address' TEXT NOT NULL,
+            'Rating' TEXT NOT NULL,
+            'Review #' TEXT NOT NULL,
+            'Price' TEXT NOT NULL
         );
     '''
-            # 'Name' TEXT NOT NULL,
-            # 'Category' TEXT NOT NULL,
-            # 'Rating' INTEGER,
-            # 'Reviews' INTEGER
+
     cur.execute(statement)
     conn.commit()
     conn.close()
@@ -359,50 +358,46 @@ def populate_db():
     f = open(NETSTATE_CACHE, 'r')
     contents = f.read()
     city_data = json.loads(contents)
-    city_info = state_info()
-    for item in city_info:
-        city = item[0]
-        population = item[2]
-        stateabbr = item[1].upper()
+
+    for x in get_city_data():
+        city = x[0]
+        stateabbr = x[1]
+        population = x[2]
 
         insertion = (None, city, stateabbr, population)
         statement = 'INSERT INTO "NetState" '
         statement += 'VALUES (?, ?, ?, ?)'
         cur.execute(statement, insertion)
 
-        insertion = (None, city, stateabbr)
-        statement = 'INSERT INTO "YelpResults" '
-        statement += 'VALUES (?, ?, ?)'
+    conn.commit()
+    conn.close()
+
+def populate_db_2():
+    conn = sqlite.connect(DBNAME)
+    cur = conn.cursor()
+
+    f = open('yelp_cache.json', 'r')
+    contents = f.read()
+    yelp_res_data = json.loads(contents)
+
+    for x in get_restaurant_data():
+        name = x[0]
+        address = x[1]
+        rating = x[2]
+        reviews = x[3]
+        price = x[4]
+
+        insertion = (None, name, address, rating, reviews, price) # reviews)
+        statement = 'INSERT INTO "YelpRestaurantResults"'
+        statement += 'VALUES (?, ?, ?, ?, ?, ?)'
         cur.execute(statement, insertion)
-
-    # f = open('yelp_cache.json', 'r')
-    # contents = f.read()
-    # yelp_res_data = json.loads(contents)
-    # for x in yelp_res_data:
-    #     res_info = get_restaurants(x)
-    #     for loc in res_info:
-    #         city = city_info()[0][0]
-    #         stateabbr = loc
-    #         category = "restaurant"
-    #         name = loc["businesses"][x]["alias"]
-    #         rating = loc["businesses"][x]["rating"]
-    #         reviews = loc["businesses"][x]["review_count"]
-    #
-    #         insertion = (None, city, stateabbr, name, category, rating, reviews)
-    #         statement = 'INSERT INTO "YelpResults"'
-    #         statement += 'VALUES (?, ?, ?, ?)'
-    #         cur.execute(statement, insertion)
-
-    # f = open('yelp_cache_2.json', 'r')
-    # contents = f.read()
-    # yelp_hot_data = json.loads(contents)
-    #for x in yelp_hot_data:
 
     conn.commit()
     conn.close()
 
 init_db()
 populate_db()
+populate_db_2()
 
 
 #plotly
