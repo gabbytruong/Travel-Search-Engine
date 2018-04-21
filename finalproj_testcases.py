@@ -14,9 +14,8 @@ class TestNetState(unittest.TestCase):
         self.assertEqual(t1,('Detroit', 'mi', '951,270'))
         self.assertEqual(t2,('Los Angeles', 'ca', '3,694,820'))
         self.assertNotEqual(t2, 'Los Angeles')
-        self.assertNotEqual(t3, '651,154')
+        self.assertEqual(len(t3), 3)
         self.assertEqual(t3, ('Baltimore', 'md','651,154'))
-
 
 class TestYelpRestaurants(unittest.TestCase):
     def test_restaurant_data(self):
@@ -45,7 +44,7 @@ class TestYelpHotels(unittest.TestCase):
         "['624 W Alexandrine St', 'Detroit, MI 48201']",'5.0','13','$$$') in t1)
         self.assertTrue('60' not in t2)
         self.assertFalse('4.0' in t3)
-        self.assertTrue('267' in t3)
+        self.assertTrue('267' not in t3)
 
 
 
