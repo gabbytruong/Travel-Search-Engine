@@ -7,12 +7,15 @@ import requests
 import secrets
 from yelpapi import YelpAPI
 import sqlite3 as sqlite
-#import plotly.plotly as py
-#import plotly.graph_objs as go
+import plotly
+import plotly.plotly as py
+import plotly.graph_objs as go
 
 #upload  to plotly ( screenshots)
 
 yelp_api = YelpAPI(secrets.API_KEY)
+
+plotly.tools.set_credentials_file(username='gtruong', api_key= secrets.PLOT_KEY)
 
 
 #CACHE FOR NETSTATE
@@ -192,7 +195,7 @@ def get_hotels(user_inp):
         name = cached_file_2["businesses"][x]["alias"]
         address = cached_file_2["businesses"][x]["location"]["display_address"]
         print('--------------------- Hotel ----------------------')
-        print(name.replace('-', ' ').upper() + ' ' + str(address)) #if i have time, replace the [ ]
+        print(name.replace('-', ' ').upper() + ' ' + str(address))
         print('Rating: ' + str(rating))
         print('Number of reviews: ' + str(review_num))
         print('Price range: ' + str(price))
@@ -200,20 +203,21 @@ def get_hotels(user_inp):
     return (name.replace('-', ' '), str(address), str(rating), str(review_num), str(price))
 
 #SECOND USER PROMPT
-user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
-
-if user_inp_2 == 'view':
-    get_restaurants(user_inp)
-    print(' ')
-    get_hotels(user_inp)
-
-elif user_inp_2 == 'exit':
-    print ('\nThanks, and happy travels!')
-    exit()
-
-else:
-    print('Please enter a valid command.')
-    user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
+# user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
+#
+# if user_inp_2 == 'view':
+#     get_restaurants(user_inp)
+#     print(' ')
+#     get_hotels(user_inp)
+#
+#
+# elif user_inp_2 == 'exit':
+#     print ('\nThanks, and happy travels!')
+#     exit()
+#
+# else:
+#     print('Please enter a valid command.')
+#     user_inp_2 = input('To view restaurant and hotel reccomendations in this city, enter "view".\nTo exit the program, enter "exit": ')
 
 
 state_dict = {
@@ -268,26 +272,67 @@ state_dict = {
         'wv': 'West Virginia',
         'wy': 'Wyoming'
 }
+#new netstate function to gather info from every state
+def get_all_netstate(state):
+    baseurl = 'http://www.netstate.com/states/alma/{}_alma.htm'.format(state)
+    html = get_cached_netstate(baseurl)
+    soup = BeautifulSoup(html, 'html.parser')
+    container =soup.find(id='container')
+    my_table = container.find('table')
+    inner_table = my_table.find('table')
+    tr = inner_table.find_all('tr')[0]
+    td = tr.find_all('td')
+    city = td[1].string
+    population = td[2].string
+    #print(city + ', ' + state.upper() + ': population of ' + population + '\n ')
+    return (city, state, population)
 
 def get_city_data():
     city_data_lst = []
-    for state in state_dict.keys():
-        state_info = get_netstate_data(state)
+    for x in state_dict.keys():
+        state_info = get_all_netstate(x)
         city_data_lst.append(state_info)
     return city_data_lst
+
+#new yelp function to gather info from every state
+def get_all_restaurants(state):
+    city = get_all_netstate(state)
+    search_results = yelp_api.search_query(term = 'Restaurant',
+    location = str(city) + ', ' + str(state.upper()))
+    with open('yelp_cache.json', 'w') as CACHE_DICT:
+        json.dump(search_results, CACHE_DICT)
+
+    with open('yelp_cache.json') as json_data:
+        cached_file = json.load(json_data)
+
+    for x in range(0, 5):
+        try:
+            rating = cached_file["businesses"][x]["rating"]
+        except:
+            rating = "No rating available."
+        try:
+            price = cached_file["businesses"][x]["price"]
+        except:
+            price = "No price range available."
+        review_num = cached_file["businesses"][x]["review_count"]
+        name = cached_file["businesses"][x]["alias"]
+        address = cached_file["businesses"][x]["location"]["display_address"]
+    return (name.replace('-', ' '), str(address), str(rating), str(review_num), str(price))
 
 
 def get_restaurant_data():
     restaurant_lst = []
-    for state in state_dict.keys():
-        restaurant_info = get_restaurants(state)
+    for x in state_dict.keys():
+        restaurant_info = get_all_restaurants(x)
         restaurant_lst.append(restaurant_info)
     #print(restaurant_lst)
-    return restaurant_info
-
+    return restaurant_lst
 
 #FORMULATE ALL NETSTATE DATA INTO CACHE
 user_inp_3 = input('To further view general city population information, enter "view".\nOtherwise, enter "exit" to exit the program: ')
+
+# print ('\nThanks, and happy travels!')
+# exit()
 
 if user_inp_3 == 'exit':
     print ('\nThanks, and happy travels!')
@@ -295,18 +340,17 @@ if user_inp_3 == 'exit':
 elif user_inp_3 == 'view':
     get_city_data()
     print ('\nThanks, and happy travels!')
-    #get_restaurant_data()
+
 else:
     print('Please enter a valid command.')
     user_inp_3 = input('To further view general city population information, enter "view".\nOtherwise, enter "exit" to exit the program: ')
-
 
 
 #CREATE DB WITH FOLLOWING TABLES:
 #table 'NetState' - city (w/ID), state, population (50 of them)
 #table 'YelpResults' - city (w/ID), category, price, rating, review #
 
-DBNAME = 'cities.db'
+DBNAME = 'netstate.db'
 
 def init_db():
     conn = sqlite.connect(DBNAME)
@@ -357,7 +401,7 @@ def populate_db():
 
     f = open(NETSTATE_CACHE, 'r')
     contents = f.read()
-    city_data = json.loads(contents)
+    json_data = json.loads(contents)
 
     for x in get_city_data():
         city = x[0]
@@ -399,19 +443,78 @@ init_db()
 populate_db()
 populate_db_2()
 
+#PLOTLY COMPARISONS
+def create_plot_1():
+    fref = open('netstate_cache.json', 'r')
+    f_contents = fref.read()
+    state_data = json.loads(f_contents)
+    city_list = []
+    pop_list = []
+    for state in get_city_data():
+        pop_list.append(state[2])
+        city_list.append(state[0])
+    p_1 = 'Most Populous Cities in Every State'
+    trace0 = go.Scatter(x = city_list, y = pop_list, mode = 'markers')
+    data = go.Data([trace0])
+    layout = dict(title = p_1, yaxis = dict(zeroline = False), xaxis = dict(zeroline = False))
+    fig = dict(data=data, layout=layout)
+    plot_url = py.plot(fig, filename='Plot1')
 
-#plotly
+def create_plot_2():
+    fref = open('yelp_cache.json', 'r')
+    f_contents = fref.read()
+    yelp_data = json.loads(f_contents)
+    name_list = []
+    rev_list = []
+    for r in get_restaurant_data():
+        name_list.append(r[0])
+        rev_list.append(r[3])
+    p_2 = 'Number of Yelp Reviews of the Top Restaurant in Each Highest-Populated City'
+    trace0 = go.Scatter(x = name_list, y = rev_list, mode = 'markers')
+    data = go.Data([trace0])
+    layout = dict(title = p_2, yaxis = dict(zeroline = False), xaxis = dict(zeroline = False))
+    fig = dict(data=data, layout=layout)
+    plot_url = py.plot(fig, filename='Plot2')
 
-#virtualenv
+def create_plot_3():
+    fref = open('yelp_cache.json', 'r')
+    f_contents = fref.read()
+    yelp_data = json.loads(f_contents)
+    name_list = []
+    rating_list = []
+    for r in get_restaurant_data():
+        name_list.append(r[0])
+        rating_list.append(r[2])
+    p_3 = 'Yelp Rating Comparison of the Top Restaurant in Each Highest-Populated City'
+    trace0 = go.Scatter(x = name_list, y = rating_list, mode = 'markers')
+    data = go.Data([trace0])
+    layout = dict(title = p_3, yaxis = dict(zeroline = False), xaxis = dict(zeroline = False))
+    fig = dict(data=data, layout=layout)
+    plot_url = py.plot(fig, filename='Plot3')
 
+def create_plot_4():
+    fref = open('yelp_cache.json', 'r')
+    f_contents = fref.read()
+    yelp_data = json.loads(f_contents)
+    name_list = []
+    pr_list = []
+    for r in get_restaurant_data():
+        name_list.append(r[0])
+        pr_list.append(r[4])
+    p_4 = 'Yelp Price Range Comparison of the Top Restaurant in Each Highest-Populated City'
+    trace0 = go.Scatter(x = name_list, y = pr_list, mode = 'markers')
+    data = go.Data([trace0])
+    layout = dict(title = p_4, yaxis = dict(zeroline = False), xaxis = dict(zeroline = False))
+    fig = dict(data=data, layout=layout)
+    plot_url = py.plot(fig, filename='Plot4')
 
-#call function at the bottom
+user_inp_4 = input('To further view graph comparisons of cities along with their top restaurants, enter "view".\nOtherwise, enter "exit": ')
 
-#if __name__ == "__main__":
-#		unittest.main(verbosity=2)
-
-# if __name__ == '__main__':
-#     unittest.main()
-#
-# if __name__=="__main__":
-#     interactive_prompt()
+if user_inp_4 == 'view':
+    create_plot_1()
+    create_plot_2()
+    create_plot_3()
+    create_plot_4()
+    print("Thank you, and happy travels!")
+else:
+    exit()
