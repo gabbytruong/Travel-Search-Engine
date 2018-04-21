@@ -317,7 +317,7 @@ def get_all_restaurants(state):
         review_num = cached_file["businesses"][x]["review_count"]
         name = cached_file["businesses"][x]["alias"]
         address = cached_file["businesses"][x]["location"]["display_address"]
-    return (name.replace('-', ' '), str(address), str(rating), str(review_num), str(price))
+    return (name.replace('-', ' '), address, str(rating), str(review_num), str(price))
 
 
 def get_restaurant_data():
@@ -327,7 +327,6 @@ def get_restaurant_data():
         restaurant_lst.append(restaurant_info)
     #print(restaurant_lst)
     return restaurant_lst
-
 
 #CREATE DB WITH FOLLOWING TABLES:
 #table 'NetState' - city (w/ID), state, population (50 of them)
@@ -367,7 +366,7 @@ def init_db():
         CREATE TABLE 'YelpRestaurantResults' (
             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
             'RestaurantName' TEXT NOT NULL,
-            'Address' TEXT NOT NULL,
+            'StateAbbr' TEXT NOT NULL,
             'Rating' TEXT NOT NULL,
             'Review #' TEXT NOT NULL,
             'Price' TEXT NOT NULL
@@ -409,12 +408,12 @@ def populate_db_2():
 
     for x in get_restaurant_data():
         name = x[0]
-        address = x[1]
+        stateabbr = state_dict.keys()[0]
         rating = x[2]
         reviews = x[3]
         price = x[4]
 
-        insertion = (None, name, address, rating, reviews, price) # reviews)
+        insertion = (None, name, stateabbr, rating, reviews, price) # reviews)
         statement = 'INSERT INTO "YelpRestaurantResults"'
         statement += 'VALUES (?, ?, ?, ?, ?, ?)'
         cur.execute(statement, insertion)
@@ -422,9 +421,25 @@ def populate_db_2():
     conn.commit()
     conn.close()
 
-init_db()
-populate_db()
-populate_db_2()
+# init_db()
+# populate_db()
+# populate_db_2()
+
+def table(params):
+    conn = sqlite.connect(DBNAME)
+    cur = conn.cursor()
+
+    statement = '''
+                SELECT City
+                FROM NetState
+                  JOIN YelpRestaurantResults
+                  ON NetState.StateAbbr=YelpRestaurantResults.StateAbbr
+            '''
+    cur.execute(statement)
+
+    conn.commit()
+    conn.close()
+
 
 #PLOTLY COMPARISONS
 def create_plot_1():
